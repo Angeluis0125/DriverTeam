@@ -95,6 +95,8 @@ await dp.getByText("María López").first().click();
 await dp.waitForURL("**/dashboard/bookings/*");
 await dp.click('button:has-text("Aceptar")');
 await dp.getByText("Confirmada").first().waitFor();
+const wa = await dp.getByRole("link", { name: "WhatsApp" }).getAttribute("href");
+assert.match(wa, new RegExp(`^https://wa\\.me/52${phone}`), `WhatsApp sin lada: ${wa}`);
 await shot(dp, "07-booking-confirmed");
 step("chofer acepta");
 await dp.fill('input[name="amount"]', "350");

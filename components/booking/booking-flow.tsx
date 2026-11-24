@@ -9,6 +9,8 @@ import { ArrowDownUp, CheckCircle2, Clock, Gift, Route } from "lucide-react";
 import { AddressInput, type PlaceValue } from "./address-input";
 import { Button, Field, Input, Notice, Textarea, cx } from "@/components/ui";
 import type { PublicProfile } from "@/lib/public-booking";
+import { PhoneInput } from "@/components/forms/phone-input";
+import { defaultCountry } from "@/lib/phone";
 import type { Quote } from "@/lib/pricing";
 import { PAYMENT_LABELS } from "@/lib/types";
 
@@ -89,6 +91,7 @@ export function BookingFlow({ d }: { d: PublicProfile }) {
           startAt: slot.start,
           name: form.get("name"),
           phone: form.get("phone"),
+          phoneCountry: form.get("phone_country"),
           email: form.get("email") ?? "",
           passengers: form.get("passengers"),
           notes: form.get("notes") ?? "",
@@ -211,7 +214,7 @@ export function BookingFlow({ d }: { d: PublicProfile }) {
           <h2 className="mb-3 font-display text-lg font-bold">Tus datos</h2>
           <form action={submit} className="space-y-3">
             <Field label="Nombre"><Input name="name" autoComplete="name" required minLength={2} maxLength={100} /></Field>
-            <Field label="Teléfono / WhatsApp"><Input name="phone" type="tel" autoComplete="tel" required minLength={8} maxLength={25} /></Field>
+            <Field label="Teléfono / WhatsApp" hint="Elige tu país para que tu chofer pueda escribirte por WhatsApp"><PhoneInput defaultCountry={defaultCountry(d.currency)} required /></Field>
             <Field label="Email (opcional)" hint="Para enviarte la confirmación"><Input name="email" type="email" autoComplete="email" /></Field>
             <Field label="Pasajeros"><Input name="passengers" type="number" min={1} max={20} defaultValue={1} /></Field>
             <Field label="Notas para el chofer (opcional)"><Textarea name="notes" maxLength={500} placeholder="Equipaje, número de vuelo, referencias…" /></Field>

@@ -1,5 +1,7 @@
 import { Field, Input, Select, Textarea } from "@/components/ui";
 import type { Driver } from "@/lib/types";
+import { PhoneInput } from "@/components/forms/phone-input";
+import { defaultCountry } from "@/lib/phone";
 
 const TIMEZONES = [
   "America/Mexico_City", "America/Cancun", "America/Tijuana", "America/Monterrey", "America/Bogota",
@@ -18,8 +20,8 @@ export function ProfileFields({ d, siteHost }: { d?: Partial<Driver>; siteHost: 
       <Field label="Tu link de reservas" hint={`${siteHost}/tu-link`}>
         <Input name="slug" defaultValue={d?.slug ?? ""} required pattern="[a-z0-9][a-z0-9\-]{1,38}[a-z0-9]" placeholder="juan-perez" autoCapitalize="none" />
       </Field>
-      <Field label="Teléfono / WhatsApp">
-        <Input name="phone" type="tel" defaultValue={d?.phone ?? ""} />
+      <Field label="Teléfono / WhatsApp" hint="Tus clientes te escribirán a este número">
+        <PhoneInput defaultCountry={defaultCountry(d?.currency)} defaultValue={d?.phone} />
       </Field>
       <Field label="Vehículo" hint="Ej. Toyota Corolla 2022 gris, 4 pasajeros">
         <Input name="vehicle" defaultValue={d?.vehicle ?? ""} maxLength={120} />

@@ -6,7 +6,8 @@ import { changeStatus, recordPayment, saveDriverNotes } from "@/lib/booking-acti
 import { ActionForm } from "@/components/forms/action-form";
 import { StatusBadge } from "@/components/status-badge";
 import { Badge, Button, Card, Field, Input, Select, Textarea } from "@/components/ui";
-import { fmtDateTime, fmtTime, mapsDirections, whatsapp } from "@/lib/format";
+import { fmtDateTime, fmtTime, mapsDirections, telLink, whatsapp } from "@/lib/format";
+import { defaultCountry, formatPhone } from "@/lib/phone";
 import { formatMoney } from "@/lib/pricing";
 import { PAYMENT_LABELS, type BookingStatus, type PaymentMethod } from "@/lib/types";
 
@@ -36,6 +37,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
   const money = (n: number) => formatMoney(Number(n), driver.currency);
   const status = b.status as BookingStatus;
   const accepted = (methods ?? []).map((m) => m.method as PaymentMethod);
+  const cc = defaultCountry(driver.currency);
   const end = new Date(new Date(b.start_at).getTime() + b.est_duration_min * 60_000);
 
   return (
@@ -49,6 +51,7 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
           <div>
             <div className="text-sm capitalize text-muted">{fmtDateTime(b.start_at, tz)} – {fmtTime(end, tz)}</div>
             <h1 className="mt-1 font-display text-2xl font-bold">{c.full_name}</h1>
+            <p className="text-sm text-muted tabular-nums">{formatPhone(c.phone, cc)}</p>
           </div>
           <StatusBadge status={status} />
         </div>
@@ -70,8 +73,8 @@ export default async function BookingDetail({ params }: { params: Promise<{ id: 
         {b.notes && <p className="mt-3 rounded-xl border border-line p-3 text-sm"><span className="font-semibold">Nota del cliente:</span> {b.notes}</p>}
 
         <div className="mt-4 grid grid-cols-3 gap-2">
-          <a href={`tel:${c.phone}`} className="flex flex-col items-center gap-1 rounded-xl border border-line py-2 text-xs font-medium hover:bg-surface-2"><Phone size={18} />Llamar</a>
-          <a href={whatsapp(c.phone, `Hola ${c.full_name}, soy ${driver.full_name}, tu chofer.`)} target="_blank" className="flex flex-col items-center gap-1 rounded-xl border border-line py-2 text-xs font-medium hover:bg-surface-2"><MessageCircle size={18} />WhatsApp</a>
+          <a href={telLink(c.phone, cc)} className="flex flex-col items-center gap-1 rounded-xl border border-line py-2 text-xs font-medium hover:bg-surface-2"><Phone size={18} />Llamar</a>
+          <a href={whatsapp(c.phone, `Hola ${c.full_name}, soy ${driver.full_name}, tu chofer.`, cc)} target="_blank" className="flex flex-col items-center gap-1 rounded-xl border border-line py-2 text-xs font-medium hover:bg-surface-2"><MessageCircle size={18} />WhatsApp</a>
           <a href={mapsDirections(b.pickup_address, b.dropoff_address)} target="_blank" className="flex flex-col items-center gap-1 rounded-xl border border-line py-2 text-xs font-medium hover:bg-surface-2"><Navigation size={18} />Ruta</a>
         </div>
       </Card>

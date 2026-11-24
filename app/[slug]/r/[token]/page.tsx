@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { StatusBadge } from "@/components/status-badge";
 import { Button, Card } from "@/components/ui";
 import { fmtDateTime, whatsapp } from "@/lib/format";
+import { defaultCountry } from "@/lib/phone";
 import { formatMoney } from "@/lib/pricing";
 import type { BookingStatus } from "@/lib/types";
 import { cancelByCustomer } from "./actions";
@@ -51,7 +52,7 @@ export default async function ManageBooking({ params }: { params: Promise<{ slug
       </Card>
 
       {d.phone && (
-        <a href={whatsapp(d.phone, "Hola, tengo una reserva contigo.")} target="_blank" className="flex h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface text-sm font-semibold">
+        <a href={whatsapp(d.phone, "Hola, tengo una reserva contigo.", defaultCountry(d.currency))} target="_blank" className="flex h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface text-sm font-semibold">
           <MessageCircle size={18} /> Escribir a {d.full_name.split(" ")[0]}
         </a>
       )}

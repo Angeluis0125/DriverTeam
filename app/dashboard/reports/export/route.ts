@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { PAYMENT_LABELS, STATUS_LABELS, type BookingStatus, type PaymentMethod } from "@/lib/types";
 import { fmt } from "@/lib/format";
+import { formatPhone } from "@/lib/phone";
 
 const csv = (v: unknown) => {
   const s = v == null ? "" : String(v);
@@ -45,7 +46,7 @@ export async function GET(req: Request) {
   const lines = rows.map((r) => [
     fmt(r.paid_at, tz, "yyyy-MM-dd HH:mm"),
     r.bookings ? fmt(r.bookings.start_at, tz, "yyyy-MM-dd HH:mm") : "",
-    r.bookings?.customers?.full_name, r.bookings?.customers?.phone,
+    r.bookings?.customers?.full_name, r.bookings?.customers?.phone ? formatPhone(r.bookings.customers.phone) : "",
     r.bookings?.pickup_address, r.bookings?.dropoff_address, r.bookings?.est_distance_km,
     r.bookings ? STATUS_LABELS[r.bookings.status] : "",
     PAYMENT_LABELS[r.method], r.amount, r.tip, Number(r.amount) + Number(r.tip), r.note,

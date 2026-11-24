@@ -7,7 +7,7 @@ import { computeQuote, formatMoney } from "@/lib/pricing";
 import { customerLoyalty, getPublicDriver, slotsFor } from "@/lib/public-booking";
 import { verifyQuote } from "@/lib/quote-token";
 import { allow } from "@/lib/rate-limit";
-import { normalizePhone } from "@/lib/phone";
+import { buildPhone, phoneHint } from "@/lib/phone";
 import { notifyDriver, sendEmail, escapeHtml } from "@/lib/notify";
 import { siteUrl } from "@/lib/site";
 
@@ -16,7 +16,8 @@ const Body = z.object({
   quoteToken: z.string().max(4000),
   startAt: z.iso.datetime(),
   name: z.string().trim().min(2).max(100),
-  phone: z.string().trim().min(8).max(25),
+  phone: z.string().trim().min(1).max(25),
+  phoneCountry: z.string().length(2).optional(),
   email: z.union([z.email().max(200), z.literal("")]).optional(),
   passengers: z.coerce.number().int().min(1).max(20).default(1),
   notes: z.string().trim().max(500).optional(),
@@ -28,8 +29,8 @@ export async function POST(req: Request) {
   const b = parsed.data;
   if (!(await allow("booking", 8, 600))) return NextResponse.json({ error: "Demasiadas reservas, intenta más tarde" }, { status: 429 });
 
-  const phone = normalizePhone(b.phone);
-  if (!phone) return NextResponse.json({ error: "Teléfono inválido" }, { status: 400 });
+  const phone = buildPhone(b.phoneCountry ?? "MX", b.phone);
+  if (!phone) return NextResponse.json({ error: phoneHint(b.phoneCountry) }, { status: 400 });
 
   const driver = await getPublicDriver(b.slug);
   if (!driver) return NextResponse.json({ error: "Chofer no encontrado" }, { status: 404 });
