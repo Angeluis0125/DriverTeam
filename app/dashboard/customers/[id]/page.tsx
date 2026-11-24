@@ -9,7 +9,8 @@ import { Stat } from "@/components/dashboard/stat";
 import { BookingRow, type BookingListItem } from "@/components/dashboard/booking-row";
 import { loyaltyStatus } from "@/lib/loyalty";
 import { formatMoney } from "@/lib/pricing";
-import { fmt, whatsapp } from "@/lib/format";
+import { fmt, telLink, whatsapp } from "@/lib/format";
+import { defaultCountry, formatPhone } from "@/lib/phone";
 
 export const metadata = { title: "Cliente" };
 
@@ -28,6 +29,7 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
   ]);
   if (!c) notFound();
   const l = loyaltyStatus(program, Number(c.completed_trips) + Number(c.active_trips));
+  const cc = defaultCountry(driver.currency);
   const rows = (bookings ?? []) as unknown as BookingListItem[];
 
   return (
@@ -41,8 +43,8 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
           <p className="text-sm text-muted">Cliente desde {fmt(c.created_at, driver.timezone, "MMMM yyyy")}</p>
         </div>
         <div className="flex gap-2">
-          <a href={`tel:${c.phone}`} aria-label="Llamar" className="grid size-10 place-items-center rounded-xl border border-line hover:bg-surface-2"><Phone size={18} /></a>
-          <a href={whatsapp(c.phone)} target="_blank" aria-label="WhatsApp" className="grid size-10 place-items-center rounded-xl border border-line hover:bg-surface-2"><MessageCircle size={18} /></a>
+          <a href={telLink(c.phone, cc)} aria-label="Llamar" className="grid size-10 place-items-center rounded-xl border border-line hover:bg-surface-2"><Phone size={18} /></a>
+          <a href={whatsapp(c.phone, undefined, cc)} target="_blank" aria-label="WhatsApp" className="grid size-10 place-items-center rounded-xl border border-line hover:bg-surface-2"><MessageCircle size={18} /></a>
         </div>
       </div>
 
@@ -70,7 +72,7 @@ export default async function CustomerDetail({ params }: { params: Promise<{ id:
           <input type="hidden" name="id" value={c.id} />
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Nombre"><Input name="full_name" defaultValue={c.full_name} required /></Field>
-            <Field label="Teléfono"><Input value={c.phone} disabled /></Field>
+            <Field label="Teléfono"><Input value={formatPhone(c.phone, cc)} disabled /></Field>
             <Field label="Email" className="sm:col-span-2"><Input name="email" type="email" defaultValue={c.email ?? ""} /></Field>
           </div>
           <Field label="Notas" hint="Preferencias, dirección frecuente, etc.">

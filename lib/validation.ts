@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { buildPhone, phoneHint } from "@/lib/phone";
 
 const money = z.coerce.number().min(0).max(1_000_000);
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora inválida");
@@ -8,7 +9,7 @@ export const RESERVED_SLUGS = new Set([
   "manifest", "sw", "favicon", "robots", "sitemap", "terminos", "privacidad", "ayuda",
 ]);
 
-export const ProfileSchema = z.object({
+const ProfileBase = z.object({
   full_name: z.string().trim().min(2, "Escribe tu nombre").max(100),
   slug: z
     .string()
@@ -17,11 +18,24 @@ export const ProfileSchema = z.object({
     .regex(/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/, "El link solo puede tener letras, números y guiones (3–40)")
     .refine((s) => !RESERVED_SLUGS.has(s), "Ese link está reservado"),
   phone: z.string().trim().max(25).optional().default(""),
+  phone_country: z.string().length(2).optional(),
   vehicle: z.string().trim().max(120).optional().default(""),
   bio: z.string().trim().max(400).optional().default(""),
   photo_url: z.union([z.url().max(500), z.literal("")]).optional().default(""),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/).default("MXN"),
   timezone: z.string().trim().min(3).max(64).refine(isValidTz, "Zona horaria inválida"),
+});
+
+/** Perfil del chofer: el teléfono se guarda con lada internacional (o vacío). */
+export const ProfileSchema = ProfileBase.transform((p, ctx) => {
+  const { phone_country, ...rest } = p;
+  if (!p.phone) return { ...rest, phone: "" };
+  const phone = buildPhone(phone_country ?? "MX", p.phone);
+  if (!phone) {
+    ctx.addIssue({ code: "custom", message: phoneHint(phone_country) });
+    return z.NEVER;
+  }
+  return { ...rest, phone };
 });
 
 export const PricingSchema = z.object({ base: money, per_km: money, per_min: money, minimum: money });
